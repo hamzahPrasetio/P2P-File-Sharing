@@ -29,7 +29,7 @@ public class Server_P {
 
 	ServerSocket receiveSocket;
 	Socket connSocket;
-	static String root = "C:/p2p";
+	static String root = "D:/Kuliah/Smt_6/SisTer/UAS/P2P-File-Sharing-master/";
 	static String baseLocation = root + "/Server";
 	int sizeOfEachChunk = 102400;
 	private int mainServport;
@@ -132,7 +132,7 @@ public class Server_P {
 			//xyz.mp4
 			// main file that is to be broken into pieces
 			Scanner sc=new Scanner(System.in);
-			System.out.println("Please place the file in c:p2p folder and Enter the filename:");
+			System.out.println("Please place the file in " + root + " folder and Enter the filename:");
 			String input=sc.nextLine();
 			 //"FLR.pdf"
 			File inputFile = new File(baseLocation +"/"+input);
@@ -190,6 +190,7 @@ class ServerThread extends Thread {
 		try {
 			// get output stream
 			outStream = new ObjectOutputStream(socket.getOutputStream());
+			//System.out.println("Thread Id: " + Thread.currentThread().getId());
 
 			/*
 			 * Total no of files clients need to have... info will be passed to
@@ -218,7 +219,7 @@ class ServerThread extends Thread {
 
 	public ChunkFileObject constructChuckFileObject(File file, int chunkNum) throws IOException {
 		byte[] chunk = new byte[102400]; // should be 100kb, see demo
-		System.out.println("construct object - " + file.getName());
+		System.out.println("construct object - " + file.getName() + " on Thread with ID : " + Thread.currentThread().getId());
 		ChunkFileObject chunkObj = new ChunkFileObject();
 
 		chunkObj.setFileNum(chunkNum);

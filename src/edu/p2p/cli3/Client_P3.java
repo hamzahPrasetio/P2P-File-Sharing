@@ -18,12 +18,13 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.*;
 
 import edu.p2p.helper.ChunkFileObject;
 
 public class Client_P3 {
 
-	static String root = "C:/p2p/";
+	static String root = "D:/Kuliah/Smt_6/SisTer/UAS/P2P-File-Sharing-master/";
 	static String baseLocation = root + "/ClientP3";
 	static String chunksLocation = baseLocation + "/chunks";
 	ServerSocket receiveSocket;
@@ -32,6 +33,8 @@ public class Client_P3 {
 	ObjectInputStream inStream;
 	ObjectOutputStream outStream;
 	Set<Integer> chunkList;
+	//mutex
+	Semaphore semaphore;
 	private int mainServport;
 	private int clientServport;
 	private int clientNeighborPort;
@@ -42,6 +45,9 @@ public class Client_P3 {
 		
 		// create dir chunks
 		new File(baseLocation + "/chunks/").mkdirs();
+		
+		//mutex
+		c.semaphore = new Semaphore(1);
 		
 		String clientConf = null;
 		int totalFilesToRecv;
@@ -103,7 +109,20 @@ public class Client_P3 {
 				c.outStream.flush();
 				ChunkFileObject rChunkObj = c.receiveChunk();
 				if (rChunkObj != null)
-					c.createChunkFile(chunksLocation, rChunkObj);
+					new Thread(new Runnable(){
+						public void run(){							
+							//mutex
+							try {
+								c.semaphore.acquire();
+								System.out.println("Thread " + Thread.currentThread().getId() + " gained semaphore permit");
+								c.createChunkFile(chunksLocation, rChunkObj);
+								c.semaphore.release();
+								System.out.println("Thread " + Thread.currentThread().getId() + " released semaphore permit");
+							} catch (InterruptedException exc) { 
+								System.out.println(exc); 
+							}
+					}}).start();
+					//c.createChunkFile(chunksLocation, rChunkObj);
 				}
 
 			}
@@ -129,7 +148,7 @@ public class Client_P3 {
 		try {
 			int neighbourCount = 1; // initialized to 0
 			receiveSocket = new ServerSocket(port);
-			System.out.println(this.getClass().getName()+"Client3-Server socket created, accepting connections...");
+			System.out.println(this.getClass().getName()+"-Server socket created, accepting connections...");
 			//only 2 connections with neighbours
 			while (true) {
 				//System.out.println(clientMap);
